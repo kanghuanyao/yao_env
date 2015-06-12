@@ -1,0 +1,28 @@
+#!/bin/bash
+
+function usage
+{
+	echo "$0 PATH REVISION"
+}
+
+p=$1
+r=$2
+
+if [ "$p" == "" ] || [ "$r" == "" ] ; then
+	usage
+	exit 1
+fi
+
+tmp_file=patch_$r
+
+svn diff -c $r $p > $tmp_file
+patch -p0 < $tmp_file
+
+if [ "$?" == "0" ] ; then
+	echo "Merge success."
+	rm $tmp_file
+	exit 0
+else
+	echo "Merge failed."
+	exit 1
+fi

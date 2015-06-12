@@ -1,0 +1,102 @@
+# Install gcc/make
+apt-get -y install build-essential vim openssh-server
+
+# Install vmware/virtualbox addions
+
+# ------------------------------------------------------------------
+# Set IPv4/6 forwarding
+vim /etc/sysctl.conf
+	net.ipv4.ip_forward=1
+	net.ipv6.conf.all.forwarding=1
+sysctl -p
+
+# ------------------------------------------------------------------
+# Network configuration.
+# eth0 -> bridge
+# eth1 -> NAT (optional)
+cp -f interfaces /etc/network/interfaces
+service networking restart
+# NAT.
+iptables-restore network/iptables-rules
+
+# ------------------------------------------------------------------
+# DHCPv4
+apt-get install isc-dhcp-server
+cp -f dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf
+/etc/init.d/isc-dhcp-server restart
+
+# ------------------------------------------------------------------
+# radvd
+apt-get -y install radvd
+cp -f ./ipv6/radvd.conf /etc/radvd.conf
+/etc/init.d/radvd restart
+
+# ------------------------------------------------------------------
+# dibbler-server 
+# Need to get the newest dibbler.
+cd /opt
+wget http://klub.com.pl/dhcpv6/dibbler/dibbler-0.8.4.tar.gz && \
+tar -zxvf dibbler-0.8.4.tar.gz && \
+cd dibbler-0.8.4 && \
+./configure && make all install
+# Run dibbler
+cp -f ./ipv6/server.conf /etc/dibbler/server.conf && dibbler-server stop; dibbler-server start
+
+# ------------------------------------------------------------------
+# ISC-dhcp server IPv6
+# 
+touch /var/lib/dhcp/dhcpd6.leases
+cp ipv6/isc_dhcp6s.conf /etc/dhcp/dhcp6s.conf 
+killall dhcpd; dhcpd -6 -cf /etc/dhcp/dhcp6s.conf -pf /var/run/dhcp6s.pid eth0
+
+# ------------------------------------------------------------------
+# DNS server
+# Install software dnsmasq
+# http://www.thekelleys.org.uk/dnsmasq/
+# make and install.
+
+killall dnsmasq; dnsmasq -h -q --conf-file=./dns/dnsmasq.conf --clear-on-reload
+
+#test
+dig @::1 aftr.yaoyao.tw AAAA
+
+# ------------------------------------------------------------------
+# tdhcp for pppoe dhcpv6 server
+cd tdhcp
+make && cp -f tdhcpd /usr/sbin/
+
+# ------------------------------------------------------------------
+# PPPoE server
+apt-get install -y pppoe
+# Copy configuration files
+cp -Rf ppp /etc
+# Restart service
+killall pppoe-server; pppoe-server -l eth0 -L 10.0.0.1 -R 10.0.0.10 -N 10
+
+# ------------------------------------------------------------------
+# pptpd
+apt-get install pptpd
+
+cp pptpd/pptpd.conf /etc/pptpd.conf
+cp pptpd/pptpd-options /etc/ppp/pptpd-options
+/etc/init.d/pptpd restart
+
+# ------------------------------------------------------------------
+# DS-lite
+# Create
+ip -6 tunnel add ip4ip6 mode ip4ip6 remote 2001::1:4673 local 2001::1
+ip link set dev ip4ip6 up
+ip route add 192.168.0.0/24 dev ip4ip6
+
+# Destory
+ip -6 tunnel del ip4ip6
+
+
+
+
+
+
+
+
+
+

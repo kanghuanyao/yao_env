@@ -1,0 +1,15 @@
+#!/bin/bash
+function get_filename
+{
+	echo "$HOME/rm/$(date +%s_%N)_$RANDOM"
+}
+
+while [ "$1" != "" ] ; do
+	RDN_FILE=$(get_filename)
+	while [ ! -f $RND_FILE ] ; do
+		RDN_FILE=$(get_filename)
+	done
+	test -e $1 && mv $1 $RDN_FILE
+	shift
+done
+

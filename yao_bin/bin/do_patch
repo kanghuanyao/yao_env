@@ -1,0 +1,64 @@
+if [ ! -e ".svn" ] ; then 
+	echo "Error directory"
+	exit 1;
+fi
+
+VERSION=patch_$(date "+%Y_%m%d_%H%M")
+
+TMP_DIR="/tmp/$VERSION"
+
+rm -rf $TMP_DIR
+
+README_FILE="$TMP_DIR/$VERSION.README.txt" 
+PATCH_FILE="$TMP_DIR/$VERSION.patch"
+SOURCE_COMPRESSED_FILE="$VERSION.tar"
+
+echo "TMPDIR=$TMP_DIR"
+
+mkdir -p $TMP_DIR
+
+# Create Readme file.
+echo "********************************************************************************" >> $README_FILE
+echo "Note:" >> $README_FILE
+echo "USER:$USER" >> $README_FILE
+echo "DATE: $(date)" >> $README_FILE
+echo "1. " >> $README_FILE
+echo "********************************************************************************" >> $README_FILE
+echo "To use the patch file, put the \".patch\" file in the directory of source code and use the command \"patch -p0 < $VERSION.patch\"." >> $README_FILE
+echo '==========' >> $README_FILE
+echo "svn info $@:" >> $README_FILE
+svn info $@ >> $README_FILE
+echo '==========' >> $README_FILE 
+echo "svn st -q $@ " >> $README_FILE
+svn st -q $@ >> $README_FILE
+
+MODIFIED_LIST=$(svn st -q $@ | awk '$1=="M" {print $2}')
+ADD_LIST=$(svn st -q $@ | awk '$1=="A" {print $2}')
+DELETE_LIST=$(svn st -q $@ | awk '$1=="D" {print $2}')
+
+# Create diff file.
+svn diff $MODIFIED_LIST > $PATCH_FILE
+
+tar -cvf $SOURCE_COMPRESSED_FILE $MODIFIED_LIST $ADD_LIST 
+
+OLD_DIR=$(pwd)
+
+mkdir $TMP_DIR/modified
+mv $SOURCE_COMPRESSED_FILE $TMP_DIR/modified
+cd $TMP_DIR/modified
+tar -xf $SOURCE_COMPRESSED_FILE
+rm $SOURCE_COMPRESSED_FILE
+cd ..
+cp -Rf modified original
+
+cd original
+patch -p0 -R -i $PATCH_FILE
+cd ..
+
+cd ../
+tar -jcf $VERSION.tar.bz2 $VERSION
+
+cp $VERSION.tar.bz2 $OLD_DIR/
+#mv $SOURCE_COMPRESSED_FILE .
+
+#rm -Rf $TMP_DIR

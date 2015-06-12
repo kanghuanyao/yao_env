@@ -1,0 +1,63 @@
+<!-- DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" -->
+
+<html>
+<head>
+<title>D-LINK</title>
+<meta http-equiv="X-UA-Compatible" content="IE=9">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Type" content="text/css">
+<script type="text/javascript" charset="utf-8" src="AES.js"></script>
+<script type="text/javascript">
+
+function start()
+{
+	
+	var input = document.getElementById("input").value;
+	var input_hex = str2hexstr(input);
+	var PrivateKey_hex = document.getElementById("PrivateKey").value;
+	
+	
+	var encrypted = AES_Encrypt128(input_hex, PrivateKey_hex);	// modified function. 
+	var decrypted = AES_Decrypt128(encrypted, PrivateKey_hex);
+	
+	var decrypted_ascii = hexstr2str(decrypted);
+	
+	
+	if (input == decrypted_ascii)
+		var result="Success";
+	else
+		var result = "Failed";
+	
+	document.getElementById("InputHex").value = input_hex;
+	document.getElementById("PrivateKey").value = PrivateKey_hex;
+	document.getElementById("AES_Encrypt128").value = encrypted;
+	document.getElementById("AES_Decrypt128").value = decrypted;
+	document.getElementById("decrypted").value = decrypted_ascii;
+	
+	document.getElementById("result").value = result;
+}
+
+</script>
+</head>
+
+<body>
+	<input type="submit" onclick="start()">
+	<table border="0">
+
+	<tr><td>	PrivateKey(hex) = </td><td><input type="text" id="PrivateKey" size=150 maxlength="64"></input></td></tr>
+	<tr><td>	InputText(ascii) = </td><td><input type="text" id="input" size=150 maxlength="64"></input></td></tr>
+	
+	<tr><td>	InputText (hex) = </td><td><input type="text" id="InputHex" size=150 disabled></input></td></tr>
+	
+	
+	<tr><td>	AES_Encrypt128 (hex) = </td><td><input type="text" id="AES_Encrypt128" size=150 disabled></input></td></tr>
+	
+	
+	<tr><td>	AES_Decrypt128 (hex) = </td><td><input type="text" id="AES_Decrypt128" size=150 disabled></input></td></tr>
+	
+	<tr><td>	Decrypted (ascii) = </td><td><input type="text" id="decrypted" size=150 disabled></input></td></tr>
+	
+	<tr><td>	Result = </td><td><input type="text" id="result" size=150 disabled></input></td></tr>
+	</table>
+</body>
+</html>

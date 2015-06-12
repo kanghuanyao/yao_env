@@ -1,0 +1,35 @@
+# Start message
+startup_message off
+
+# Set hardstatus always on
+hardstatus alwayslastline "%-Lw%{= Bw} %n%f %t %{-}%+Lw %= %{= d} %{= yk} %l "
+
+# Set default encoding using utf8
+defutf8 on
+
+# Refresh the display when exiting programs
+altscreen on
+
+# Dynamic title
+shelltitle '$|bash'
+
+# vbell
+vbell "off"
+bell_msg ""
+
+
+#F3 to previous screen
+bindkey -k k3 prev	
+#F4 to next screen
+bindkey -k k4 next	
+
+#F5 to split screen
+#bindkey -k k5 split
+#F6 to split screen
+#bindkey -k k6 focus	
+#F7 to split screen
+#bindkey -k k7 only	
+
+defscrollback 5000
+
+

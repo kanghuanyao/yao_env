@@ -1,0 +1,31 @@
+currentDir=$(pwd);
+
+filelist=$(ls -Ax $currentDir/conf_file)
+
+if [ $(grep "yao_env.sh" $HOME/.bashrc ) ] ; then
+	echo "Has been installed?"
+	exit 1
+fi
+
+if [ -f $currentDir/yao_env.sh ] ; then
+	echo "export yao_env_path=\"$currentDir\"" >> $HOME/.bashrc
+	echo ". $currentDir/yao_env.sh" >> $HOME/.bashrc
+else
+	echo "cannot find yao_env.sh"
+	exit 1
+fi
+
+for i in $filelist 
+do
+	if [ -f "$HOME/$i" ] ; then
+		read -p "$i exist! Press 'y' to delete $HOME/$i. " input;
+		if [ "$input" == "n" ] ; then
+			exit 1;
+		fi
+	fi
+
+	rm -f $HOME/$i
+	ln -s $currentDir/conf_file/$i $HOME/$i
+done
+
+

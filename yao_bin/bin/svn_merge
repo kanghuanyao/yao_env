@@ -1,0 +1,47 @@
+#!/bin/bash
+# This shell script is used for patch source code very quick.
+# Creater: HuanYao Kang.
+
+if [ "$#" -lt 1 ] ; then
+	echo "usage: $0 REVISION [BRANCH]"
+	exit 1
+fi
+
+revision=$1
+product=$2
+
+reposity="svn://172.19.176.57/elbox"
+TMP_FILE="$revision.patch"
+
+if [ "$2" == "" ] ; then
+	url="$reposity/trunk"
+else
+	url="$reposity/branches/$product"
+fi
+
+echo "Source reposity url:$url"
+
+# Check the url is exist or not
+svn ls $url &> /dev/null
+if [ $? != "0" ] ; then
+	echo "ERROR! $url is not exist"
+	exit 1;
+fi
+
+svn diff -c $revision $url > $TMP_FILE
+
+if [ $? != "0" ] ; then
+	echo "ERROR during creating patch file."
+	exit 1;
+fi
+
+cat $TMP_FILE
+
+read -p "Press y to patch." y
+
+if [ "$y" == "y" ] || [ "$y" == "Y" ] ; then
+	patch -p0 -i $TMP_FILE
+	
+fi
+
+rm $TMP_FILE

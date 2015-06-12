@@ -1,0 +1,58 @@
+#!/bin/bash
+
+function print_usage ()
+{
+	echo "usage: $0 status_search_path make_target"
+	exit 1;
+}
+
+
+if [ $# -lt 2 ] ; then
+	echo "make target is not supposed to be NULL"
+	print_usage
+	exit 1;
+fi
+
+STATUS_PATH=$1
+shift
+MAKE_PARAMETER=$@
+
+SHOW_WARNING=y
+
+ERROR_COLOR="1;31"
+WARINING_COLOR="1;33"
+RESULT_COLOR="\033[1;34m"
+
+echo "============ Start capture modified file(s)."
+FILE_FULL_PATH=$(svn st -q $STATUS_PATH | grep "^M\|^A" | grep ".c$\|.h$\|.cpp$" | awk '{print $2}' )
+
+echo "============ File(s) modified:"
+for i in $FILE_FULL_PATH ; do
+	echo $i
+done
+
+for i in $FILE_FULL_PATH ; do
+	touch $i
+	t=$(echo $i | sed 's/^.*\///g')
+#	echo $t
+	FILE_NAME="$FILE_NAME $t"
+done
+
+#echo $FILE_NAME
+
+echo "============ Start to build:"
+MAKE_LOG_FILE=make_log_$(date '+%F_%H:%M:%S')
+make $MAKE_PARAMETER 1> /dev/null 2> $MAKE_LOG_FILE && RESULT=Success || RESULT=Failed
+
+echo -e "============ Build result:$RESULT_COLOR$RESULT\033[0m"
+echo "For more detail in stderr while build, please see the file $MAKE_LOG_FILE"
+
+for i in $FILE_NAME ; do
+	echo "============ In file $i"
+	export GREP_COLOR=$ERROR_COLOR
+	grep -e "$i:[[:digit:]]*: error" $MAKE_LOG_FILE --color=auto
+	export GREP_COLOR=$WARINING_COLOR
+	test "$SHOW_WARNING" == "y" && grep -e "$i:[[:digit:]]*: warning" $MAKE_LOG_FILE --color=auto
+	
+done
+

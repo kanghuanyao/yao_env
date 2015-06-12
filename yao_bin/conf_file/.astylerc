@@ -1,0 +1,10 @@
+--style=allman 
+--indent=force-tab 
+--indent-switches 
+--indent-classes 
+--indent-namespaces 
+--indent-preproc-block 
+--indent-preproc-define
+--lineend=linux
+--verbose
+

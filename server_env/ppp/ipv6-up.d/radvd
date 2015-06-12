@@ -1,0 +1,63 @@
+#!/bin/bash
+# ADDR=$(echo $PPP_REMOTE | cut -d : -f 3,4,5,6)
+# PD=$(echo $PPP_REMOTE | cut -d : -f 5,6)
+
+PPP_IFACE_INDEX=${PPP_IFACE:3:4}
+
+RAPREFIX=2001::
+MFLAG=on;
+OFLAG=on;
+LFLAG=off;
+AFLAG=off;
+
+ADDR="2001::1:$PPP_IFACE_INDEX"
+PD="2001:2:$PPP_IFACE_INDEX::/62"
+
+#---------------------------------------------------
+#add route
+ip -6 route add $ADDR/128 dev $PPP_IFACE
+ip -6 route add $PD dev $PPP_IFACE
+
+
+#---------------------------------------------------
+#generate radvd config
+RAP=/etc/ppp/ipv6-radvd/$PPP_IFACE
+RA=$RAP.radvd.conf
+
+rm $RA
+echo "
+interface $PPP_IFACE {
+	AdvSendAdvert on;
+	MinRtrAdvInterval 3;
+	MaxRtrAdvInterval 10; 
+	AdvManagedFlag $MFLAG;
+	AdvOtherConfigFlag $OFLAG;
+	AdvLinkMTU 1450;
+	AdvDefaultLifetime 60;
+	prefix $RAPREFIX/64 {
+		AdvOnLink $LFLAG;
+		AdvAutonomous $AFLAG;
+		AdvPreferredLifetime 30; 
+		AdvValidLifetime 60;
+	};
+#	RDNSS 2000::ff
+#	{
+#	};
+};
+" > $RA
+
+#start radvd
+/usr/sbin/radvd -C $RA -p $RAP.radvd.pid
+
+#---------------------------------------------------
+# start tdhcpd
+/usr/sbin/tdhcpd \
+	--address=$ADDR \
+	--prefix=$PD \
+	--dns-server=2001::1 \
+	--pid-file=$RAP.dhcp.pid  \
+	--local-id=test \
+	--log-level=debug \
+	$PPP_IFACE
+
+exit 0

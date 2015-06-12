@@ -1,0 +1,13 @@
+asyncmap 0
+noauth
+crtscts
+lock
+hide-password
+modem
++pap
+-chap
+proxyarp
+lcp-echo-interval 30
+lcp-echo-failure 4
+noipx
+

@@ -1,0 +1,16 @@
+Source: tdhcp
+Section: main
+Priority: extra
+Maintainer: konrad <konrad@silmor.de>
+Build-Depends: debhelper (>= 7), subversion, subversion-tools
+Standards-Version: 3.7.3
+Homepage: http://silmor.de/69
+
+Package: tdhcp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Tunnel/Tiny DHCPv6 daemon and client
+ TDHCP is a minimal implementation of DHCPv6 that is geared towards the setup
+ of tunnels, and PPP links, esp. using Prefix Delegation to setup routing.
+ .
+ See also http://silmor.de/69
