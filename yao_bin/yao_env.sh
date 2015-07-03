@@ -1,11 +1,12 @@
+#!/bin/bash
 
 if [ "$yao_env_path" == "" ] ; then
 	echo "yao_env_path is not exported."
 fi
 
-if [ "$TERM" != "screen" ]; then
+if [ "$TERM" != "screen" ] ; then
 	EXE_PATH="$yao_env_path/bin $HOME/local/bin"
-	for i in $EXE_PATH ; do
+	for i in "$EXE_PATH" ; do
 		if [ -e "$i" ] ; then
 			export PATH="$i:$PATH"
 		fi
